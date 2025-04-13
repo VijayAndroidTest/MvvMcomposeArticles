@@ -1,4 +1,4 @@
-package com.example.articlemvvm
+package com.example.articlemvvm.MvvMcompose
 
 import retrofit2.http.GET
 import retrofit2.http.Query

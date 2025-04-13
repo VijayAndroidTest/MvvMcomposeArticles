@@ -1,4 +1,4 @@
-package com.example.articlemvvm
+package com.example.articlemvvm.MvvMcompose
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
+// ArticlesViewModel using mutableStateOf (for Compose).
 class   ArticlesViewModel : ViewModel() {
     private val repository = ArticlesRepository()
     val articles = mutableStateOf<List<Article>>(emptyList())

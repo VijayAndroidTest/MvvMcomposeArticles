@@ -1,4 +1,4 @@
-package com.example.articlemvvm
+package com.example.articlemvvm.MvvMcompose
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
