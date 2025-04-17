@@ -5,13 +5,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.articlemvvm.MvvMcompose.ApiService
 import com.example.articlemvvm.MvvMcompose.Article
 import com.example.articlemvvm.MvvMcompose.ArticlesRepository
-import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
 
-//ArticlesViewModelXml using LiveData (for XML Activity)
-class ArticlesViewModelXml : ViewModel() {
-    private val repository = ArticlesRepository()
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class ArticlesViewModelXml @Inject constructor(
+    private val apiService: ApiService
+) : ViewModel() {
 
     private val _articles = MutableLiveData<List<Article>>(emptyList())
     val articles: LiveData<List<Article>> = _articles
@@ -31,7 +36,8 @@ class ArticlesViewModelXml : ViewModel() {
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val response = repository.getArticles(limit, offset)
+                // Directly use the injected apiService
+                val response = apiService.getArticles(limit, offset)
                 _articles.value = response.results
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to fetch articles: ${e.message}"

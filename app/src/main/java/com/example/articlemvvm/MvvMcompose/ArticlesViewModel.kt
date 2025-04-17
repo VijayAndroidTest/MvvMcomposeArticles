@@ -4,11 +4,17 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // ArticlesViewModel using mutableStateOf (for Compose).
-class   ArticlesViewModel : ViewModel() {
-    private val repository = ArticlesRepository()
+@HiltViewModel
+class ArticlesViewModel @Inject constructor(
+    private val repository: ArticlesRepository
+) : ViewModel() {
+
     val articles = mutableStateOf<List<Article>>(emptyList())
     val isLoading = mutableStateOf(false)
     val errorMessage = mutableStateOf<String?>(null)

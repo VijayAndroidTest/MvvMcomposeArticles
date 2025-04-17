@@ -1,22 +1,17 @@
 package com.example.articlemvvm.MvvmXml
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import android.view.View
+import android.content.Intent
+import android.widget.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.articlemvvm.MvvMcompose.Article
-import com.example.articlemvvm.MvvMcompose.ArticlesViewModel
 import com.example.articlemvvm.R
 
 class MainActivity : AppCompatActivity() {
@@ -27,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var articlesAdapter: ArticlesAdapter
     private val articles = mutableListOf<Article>()
 
-    private lateinit var viewModel: ArticlesViewModelXml // <-- use the XML ViewModel
+    private lateinit var viewModel: ArticlesViewModelXml
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +42,50 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        viewModel = ViewModelProvider(this)[ArticlesViewModelXml::class.java] // <-- ViewModel for XML
+        viewModel = ViewModelProvider(this)[ArticlesViewModelXml::class.java]
 
-        observeViewModel()
+        checkBiometricSupportAndAuthenticate()
+    }
+
+    private fun checkBiometricSupportAndAuthenticate() {
+        val biometricManager = BiometricManager.from(this)
+        when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> showBiometricPrompt()
+            else -> {
+                Toast.makeText(this, "Biometric authentication not supported", Toast.LENGTH_SHORT).show()
+                observeViewModel() // fallback without biometric
+            }
+        }
+    }
+
+    private fun showBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    observeViewModel() // load data only on successful auth
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    Toast.makeText(applicationContext, "Auth error: $errString", Toast.LENGTH_SHORT).show()
+                    finish() // or provide fallback
+                }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    Toast.makeText(applicationContext, "Authentication failed", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Authenticate")
+            .setSubtitle("Use biometrics to access articles")
+            .setNegativeButtonText("Cancel")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     private fun observeViewModel() {
